@@ -1,0 +1,64 @@
+# AgentGuard: one command to run the whole stack locally.
+#   docker compose up --build
+# Then open http://localhost:3000 (API docs at http://localhost:8000/docs).
+# Values come from a .env file next to this file if present (see .env.example).
+name: agentguard
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agentguard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agentguard}
+      POSTGRES_DB: ${POSTGRES_DB:-agentguard}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agentguard} -d ${POSTGRES_DB:-agentguard}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-agentguard}:${POSTGRES_PASSWORD:-agentguard}@db:5432/${POSTGRES_DB:-agentguard}
+      # Empty => a random secret is generated at start-up (sessions reset on restart).
+      JWT_SECRET: ${JWT_SECRET:-}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      SEED_SAMPLE_WORKFLOWS: ${SEED_SAMPLE_WORKFLOWS:-true}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-agentguard-demo}
+      # The browser reaches the API through the frontend's same-origin proxy.
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      MOCK_INJECTION_BEHAVIOR: ${MOCK_INJECTION_BEHAVIOR:-comply}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5-5}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        API_INTERNAL_URL: http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

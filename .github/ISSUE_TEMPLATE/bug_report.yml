@@ -1,0 +1,50 @@
+name: Bug report
+description: Something in AgentGuard does not behave as documented.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve AgentGuard! Please use fictional data only; never paste real customer information or API keys.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Include the page, the request you submitted and the workflow id if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Sign in as ravi.reviewer
+        2. Open the Agent Playground and submit ...
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: setup
+    attributes:
+      label: How are you running AgentGuard?
+      options:
+        - docker compose
+        - local (SQLite)
+        - local (PostgreSQL)
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: AI provider
+      placeholder: mock / anthropic / openai_compatible
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or audit events
+      render: shell

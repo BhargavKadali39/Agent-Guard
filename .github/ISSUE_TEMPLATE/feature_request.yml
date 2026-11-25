@@ -1,0 +1,25 @@
+name: Feature or scenario idea
+description: Suggest a feature, a new Failure Lab scenario or a learning improvement.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would this teach or improve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: For a new Failure Lab scenario, describe the initial request, the expected safe behavior and the assertions that prove it.
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: Rough size
+      options:
+        - Good first issue (small, well-scoped)
+        - Medium
+        - Large / architectural
